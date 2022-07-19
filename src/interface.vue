@@ -5,11 +5,13 @@
                 <v-icon name="perm_identity" />
             </template>
         </v-input>
-        <v-button icon><v-icon name="refresh"/></v-button>
+        <v-button @click="refresh" icon><v-icon name="refresh"/></v-button>
     </div>
 </template>
 
 <script>
+    import getHRI from './hri';
+
     export default {
         props: {
             value: {
@@ -21,15 +23,32 @@
         emits: ['input'],
         
         mounted: function() {
-            console.log("MOUNTED:");
-            console.log(this.value);
+            if ( !this.value ) {
+                let init = getHRI();
+                this.$emit('input', init);
+            }
         },
 
         methods: {
 
+            /**
+             * Clean the user input
+             * - remove special characters
+             * - replace spaces
+             * @param {String} value value from user input
+             */
             handleChange: function(value) {
-                console.log(`Value Changed: ${value}`);
-                this.emit('input', value);
+                let replaced = value.replace(/\s+/g, '-');
+                replaced = replaced.replace(/[^a-z0-9\-]/gi, '');
+                this.$emit('input', replaced);
+            },
+
+            /**
+             * Get a new human-readable-id for the value
+             */
+            refresh: function() {
+                let value = getHRI();
+                this.$emit('input', value);
             }
 
         }
