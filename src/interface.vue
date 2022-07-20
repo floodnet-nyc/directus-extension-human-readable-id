@@ -1,16 +1,43 @@
 <template>
     <div class="human-readable-id">
-        <v-input v-model="value" @input="handleChange($event.target.value)">
+        <v-input v-model="value" disabled>
             <template #prepend>
                 <v-icon name="perm_identity" />
             </template>
         </v-input>
-        <v-button @click="refresh" icon><v-icon name="refresh"/></v-button>
+        <v-button @click="edit" icon><v-icon name="edit" /></v-button>
+        <v-button @click="refresh" icon><v-icon name="refresh" /></v-button>
     </div>
+
+    <v-dialog v-model="editActive" @esc="editActive = false" >
+        <v-card>
+            <v-card-title>Choose the components of the ID</v-card-title>
+            <v-card-text>
+                <table style="width: 100%; border: 0">
+                    <tr>
+                        <td><strong>Adjective</strong></td>
+                        <td><v-select v-model="editAdjective" :items="adjectives.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Color</strong></td>
+                        <td><v-select v-model="editColor" :items="colors.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Animal</strong></td>
+                        <td><v-select v-model="editAnimal" :items="animals.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                    </tr>
+                </table>
+            </v-card-text>
+            <v-card-actions>
+                <v-button @click="editActive = false" outlined>Cancel</v-button>
+                <v-button @click="save">Save</v-button>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
-    import getHRI from './hri';
+    import { adjectives, colors, animals, generate } from './hri';
 
     export default {
         props: {
@@ -19,12 +46,25 @@
                 default: null,
             }
         },
+
+        data: function() {
+            return {
+                delim: '-',
+                adjectives: adjectives,
+                colors: colors,
+                animals: animals,
+                editActive: false,
+                editAdjective: undefined,
+                editColor: undefined,
+                editAnimal: undefined
+            }
+        },
         
         emits: ['input'],
         
         mounted: function() {
             if ( !this.value ) {
-                let init = getHRI();
+                let init = generate(this.delim);
                 this.$emit('input', init);
             }
         },
@@ -32,22 +72,31 @@
         methods: {
 
             /**
-             * Clean the user input
-             * - remove special characters
-             * - replace spaces
-             * @param {String} value value from user input
+             * Manually choose the components of the id
              */
-            handleChange: function(value) {
-                let replaced = value.replace(/\s+/g, '-');
-                replaced = replaced.replace(/[^a-z0-9\-]/gi, '');
-                this.$emit('input', replaced);
+            edit: function() {
+                if ( this.value ) {
+                    let parts = this.value.split(this.delim);
+                    if ( parts.length === 3 ) {
+                        this.editAdjective = parts[0];
+                        this.editColor = parts[1];
+                        this.editAnimal = parts[2];
+                    }
+                }
+                this.editActive = true;
+            },
+
+            save: function() {
+                let value = [this.editAdjective, this.editColor, this.editAnimal].join(this.delim);
+                this.$emit('input', value);
+                this.editActive = false;
             },
 
             /**
              * Get a new human-readable-id for the value
              */
             refresh: function() {
-                let value = getHRI();
+                let value = generate(this.delim);
                 this.$emit('input', value);
             }
 
