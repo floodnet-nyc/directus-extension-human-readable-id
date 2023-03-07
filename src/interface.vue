@@ -1,6 +1,6 @@
 <template>
     <div class="human-readable-id">
-        <v-input v-model="value" disabled>
+        <v-input :model-value="value" @input="onInputChange($event.target.value)" disabled>
             <template #prepend>
                 <v-icon name="perm_identity" />
             </template>
@@ -16,15 +16,15 @@
                 <table style="width: 100%; border: 0">
                     <tr>
                         <td><strong>Adjective</strong></td>
-                        <td><v-select v-model="editAdjective" :items="adjectives.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                        <td><v-select v-model="editAdjective" :items="adjectives.map(v => ({text: v, value: v}))" allow-other /></td>
                     </tr>
                     <tr>
                         <td><strong>Color</strong></td>
-                        <td><v-select v-model="editColor" :items="colors.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                        <td><v-select v-model="editColor" :items="colors.map(v => ({text: v, value: v}))" allow-other /></td>
                     </tr>
                     <tr>
                         <td><strong>Animal</strong></td>
-                        <td><v-select v-model="editAnimal" :items="animals.map(function(v) { return {text: v, value: v} })" allow-other /></td>
+                        <td><v-select v-model="editAnimal" :items="animals.map(v => ({text: v, value: v}))" allow-other /></td>
                     </tr>
                 </table>
             </v-card-text>
@@ -86,6 +86,9 @@
                 this.editActive = true;
             },
 
+            /**
+             * Save manually edited properties
+             */
             save: function() {
                 let value = [this.editAdjective, this.editColor, this.editAnimal].join(this.delim);
                 this.$emit('input', value);
@@ -97,6 +100,13 @@
              */
             refresh: function() {
                 let value = generate(this.delim);
+                this.$emit('input', value);
+            },
+
+            /**
+             * Emit changes to the input to the parent
+             */
+            onInputChange: function(value) {
                 this.$emit('input', value);
             }
 
