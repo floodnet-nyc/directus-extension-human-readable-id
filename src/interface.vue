@@ -49,7 +49,7 @@
 
         data: function() {
             return {
-                delim: '-',
+                delim: '_',
                 adjectives: adjectives,
                 colors: colors,
                 animals: animals,
