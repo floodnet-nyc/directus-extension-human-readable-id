@@ -16,7 +16,7 @@ function _getRandom(items) {
  * @param {string} [delim] character to use as the delimiter
  * @returns random id
  */
-function generate(delim='-') {
+function generate(delim='_') {
     const adjective = _getRandom(adjectives);
     const color = _getRandom(colors);
     const animal = _getRandom(animals);
